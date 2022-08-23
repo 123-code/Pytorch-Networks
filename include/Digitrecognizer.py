@@ -1,32 +1,38 @@
+import numpy as np
 import torch
-from torch.utils.data import Dataset
-from torchvision import datasets
-from torchvision.transforms import ToTensor
-from torch.utils.data import DataLoader
-import torch.nn as nn
-import torch.nn.functional as F
+import torchvision
+import matplotlib.pyplot as plt
+from time import time
+from torchvision import datasets, transforms
+from torch import nn, optim
 
 print("---digit recognizer---")
 
-train_data = datasets.mnisttrain = datasets.MNIST(root='./Datasets/mnist_train.csv'
-, train=True,
- download=True,
- transform=ToTensor())
 
-test_data = datasets.mnisttest = datasets.MNIST(root='./Datasets/mnist_test.csv'
-, train=False,
- download=True,
- transform=ToTensor())
+transform = transforms.Compose([transforms.ToTensor(),
+                              transforms.Normalize((0.5,), (0.5,)),
+                              ])
 
-train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
-test_dataloasder = DataLoader(test_data, batch_size=64, shuffle=True)
+# loading datasets.
+trainset = datasets.MNIST('./Datasets/mnist_train.csv', download=True, train=True, transform=transform)
+
+valset = datasets.MNIST('./Datasets/mnist_test.csv', download=True, train=False, transform=transform)
+
+# loading datasets to dataloader.
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
+valloader = torch.utils.data.DataLoader(valset, batch_size=64, shuffle=True)
 
 # comprueba que el dataloader funciona y se imorta correctamente
-for i in train_dataloader:
+for i in trainloader:
     print(i)
     break
 
 # creacion de clase de la red neuronal 
+input_size = 784
+hidden_sizes = [128,64]
+output_size = 10
+
+
 class NN(nn.Module):
     def __init__(self):
         super(NN,self).__init__()
