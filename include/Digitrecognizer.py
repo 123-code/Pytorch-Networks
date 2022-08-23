@@ -4,7 +4,7 @@ import torchvision
 import matplotlib.pyplot as plt
 from time import time
 from torchvision import datasets, transforms
-from torch import nn, optim
+from torch import log_softmax, nn, optim
 
 print("---digit recognizer---")
 
@@ -32,42 +32,22 @@ input_size = 784
 hidden_sizes = [128,64]
 output_size = 10
 
+#nn.linear represents a network layer, applies ReLU at the end of each layer. 
+model = nn.Sequential(
+    nn.Linear(input_size,hidden_sizes[0]),
+    nn.ReLU(),
+    nn.Linear(hidden_sizes[0],hidden_sizes[1]),
+    nn.Relu(),
+    nn.Linear(hidden_sizes[1],output_size),
+    nn.LogSoftmax(dim=1)
+)
 
-class NN(nn.Module):
-    def __init__(self):
-        super(NN,self).__init__()
-        self.flatten = nn.Flatten()
-        # creating network layers
-        self.l1 = torch.nn.Linear(784, 256)
-        self.l2 = torch.nn.Linear(256,10)
-        # setting activation functions up
-        self.activation = torch.nn.ReLU()
-        self.Softmax = torch.nn.Softmax()
+print(model)
 
-# Model's Forward operations.
-    def forward(self,x_batch):
-        x_batch = self.l1(x_batch)
-        x_batch = self.activation(x_batch)
-        x_batch = self.l2(x_batch)
-        x_batch = self.Softmax(x_batch)
-        return x_batch
+criterion = nn.NLLLoss()
+images,labels = next(iter(trainloader))
+images = images.view(images.shape[0],-1)
+logps = model(images)
+loss = criterion(logps,labels)
 
- 
-digitrecognizer = NN()
 
-print(digitrecognizer)
-
-        
-numbers = torch.randn(1,28,28)
-#print(numbers)
-Forward_pass = digitrecognizer.forward(numbers)
-probability = nn.Softmax(dim=1)
-y_pred = probability.argmax(1)
-print(f"Predicted:{y_pred}")
-print("Funcionó")
-
-'''
-train_data_loader = torch.utils.data.DataLoader(mnist_train,
-batch_size=1,
-shuffle=True)
-'''
