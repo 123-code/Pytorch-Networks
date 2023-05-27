@@ -7,7 +7,7 @@ from kaggle.api.kaggle_api_extended import KaggleApi
 from transformers import BertTokenizer
 import matplotlib.pyplot as plt
 import numpy as np 
-
+import tensorflow as tf 
 
 api = KaggleApi()
 api.authenticate()
@@ -48,3 +48,25 @@ labels[np.arrange(num_samples),arr] = 1
 
 with open('movie-labels.npy','wb') as f:
     np.save(f,labels)
+
+
+with open('movie-xids.npy','rb') as f:
+    Xids = np.load(f, allow_pickle=True)
+
+
+with open('movie-labels.npy','rb') as f:
+    labels = np.load(f, allow_pickle=True)
+
+with open('movie-xmask.npy','rb') as f:
+    Xmask = np.load(f, allow_pickle=True)
+
+dataset = tf.data.Dataset.from_tensor_slices((Xids,labels))
+
+dataset.take(1)
+
+{inp_ids,masks},outputs
+
+def map(inp_ids,masks,labels):
+  return{'input_ids': inp_ids,'attention_mask':masks},labels
+
+data = dataset.map(map)
