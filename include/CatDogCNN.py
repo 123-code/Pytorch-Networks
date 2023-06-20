@@ -3,11 +3,8 @@ from torchvision import datasets,transforms
 import torch.nn as nn
 import torch.nn.functional as F 
 from torch.utils.data import DataLoader
-import torchvision.utils as vutils
 from torchvision.utils import make_grid
-import numpy as np 
-import pandas as pd 
-from PIL import Image 
+from PIL import Image  
 import matplotlib.pyplot  as plt
 import zipfile
 
@@ -54,4 +51,13 @@ class ConvolutionalNetwork(nn.Module):
 
     self.conv1 = nn.Conv2d(3,8,3,1)
     self.conv2 = nn.Conv2d(8,16,3,1)
-    self.fc1 = nn.Linear()
+    self.fc1 = nn.Linear(16*28*28,120)
+    self.fc2 = nn.Linear(120,80)
+    self.fc3 = nn.Linear(80,2)
+
+  def forward(self,X):
+    X = F.ReLU(self.conv1())
+    X = F.max_pool2d(X,2,2)
+    X = F.ReLU(self.conv2())
+    X = F.max_pool2d(X,2,2)
+    
