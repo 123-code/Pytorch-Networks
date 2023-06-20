@@ -19,8 +19,6 @@ with zipfile.ZipFile('/content/Datasets/test.zip', 'r') as zip_ref:
     zip_ref.extractall('./Test') 
     
     
-   
-    
  dataTransform = transforms.Compose(
    [ transforms.ToTensor(),
     transforms.Resize((224,224)),
@@ -43,15 +41,14 @@ plt.imshow(grid_np)
 plt.axis('off')
 plt.show()
 
-# Model
-
+#CNN Model
 class ConvolutionalNetwork(nn.Module):
   def __init__(self,X):
     super().__init__()
 
     self.conv1 = nn.Conv2d(3,8,3,1)
     self.conv2 = nn.Conv2d(8,16,3,1)
-    self.fc1 = nn.Linear(16*28*28,120)
+    self.fc1 = nn.Linear(16 * 26 * 26, 120)
     self.fc2 = nn.Linear(120,80)
     self.fc3 = nn.Linear(80,2)
 
@@ -60,4 +57,24 @@ class ConvolutionalNetwork(nn.Module):
     X = F.max_pool2d(X,2,2)
     X = F.ReLU(self.conv2())
     X = F.max_pool2d(X,2,2)
-    
+    X = X.view(X.size(0),-1)
+    X = F.ReLU(self.fc1(X))
+    X = F.ReLU(self.fc2(X))
+    X = self.fc3(X)
+    return F.log_softmax(X,dim=1)
+
+
+
+def TrainModel(epochs):
+  model = ConvolutionalNetwork()
+  loss = nn.CategoricalCrossEntropy()
+  optimizer = torch.optim.Adam(model.parameters,lr=0.001)
+
+  for X in range(epochs):
+    for _,(X_train,y_train) in enumerate(Train_Loader):
+      y_pred = model(X_train)
+      trainloss = loss(y_pred,y_train)
+      optimizer.zero_grad()
+      trainloss.backward()
+      optimizer.step()
+
