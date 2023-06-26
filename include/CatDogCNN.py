@@ -7,6 +7,7 @@ from torchvision.utils import make_grid
 from PIL import Image  
 import matplotlib.pyplot  as plt
 import zipfile
+import os 
 
 
 with zipfile.ZipFile('/content/dogs-vs-cats-redux-kernels-edition.zip', 'r') as zip_ref:
@@ -17,6 +18,20 @@ with zipfile.ZipFile('/content/Datasets/train.zip', 'r') as zip_ref:
 
 with zipfile.ZipFile('/content/Datasets/test.zip', 'r') as zip_ref:
     zip_ref.extractall('./Test') 
+
+
+train_file_names = os.listdir('/content/Train/train')
+test_file_names = os.listdir('/content/Test/test')
+train_file_names[0:9]
+
+classes = []
+for filename in train_file_names:
+  target = filename.split(".")[0]
+  if target not in classes:
+    classes.append(target)
+
+classes[0:9]
+
     
     
  dataTransform = transforms.Compose(
