@@ -81,6 +81,8 @@ class ConvolutionalNetwork(nn.Module):
 
 
 def TrainModel(epochs):
+  tst_corr = 0
+  trn_corr = 0
   model = ConvolutionalNetwork()
   loss = nn.CategoricalCrossEntropy()
   optimizer = torch.optim.Adam(model.parameters,lr=0.001)
@@ -92,4 +94,13 @@ def TrainModel(epochs):
       optimizer.zero_grad()
       trainloss.backward()
       optimizer.step()
+      tran_corr += (predicted==y_train).sum()
+
+      with torch.no_grad:
+
+        for b,(X_test,y_test) in enumerate(test_loader):
+
+          y_pred = model(X_test)
+          predicted = torch.max(y_pred.data,1)[1]
+          tst_corr += (predicted == y_test).sum()
 
