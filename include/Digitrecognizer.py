@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 import torchvision
-import matplotlib.pyplot as plt
 from time import time
 from torchvision import datasets, transforms
 from torch import log_softmax, nn, optim
@@ -37,7 +36,7 @@ model = nn.Sequential(
     nn.Linear(input_size,hidden_sizes[0]),
     nn.ReLU(),
     nn.Linear(hidden_sizes[0],hidden_sizes[1]),
-    nn.Relu(),
+    nn.ReLU(),
     nn.Linear(hidden_sizes[1],output_size),
     nn.LogSoftmax(dim=1)
 )
