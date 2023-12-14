@@ -5,9 +5,9 @@ import json
 
 client = weaviate.Client(
      url="https://embeddings-test1-z95cu7l6.weaviate.network",
-     auth_client_secret = weaviate.AuthApiKey(api_key = "hps8o36r6yafep6e41kzkszRBl1iuR0tl107"),
+     auth_client_secret = weaviate.AuthApiKey(api_key),
     additional_headers = {
-        "X-OpenAI-Api-Key": "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"
+        "X-OpenAI-Api-Key":
     }
 )
 
