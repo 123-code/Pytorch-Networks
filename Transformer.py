@@ -1,47 +1,70 @@
-# following yt tutorial
-
 import torch 
 import torch.nn as nn
 import math
 
-# mapping of letters and vectors of size 512
-class InputEmbedding(nn.Module):
-  
-  def __init__(self,d_model:int,vocab_size:int):
-    super().__init__()
-    self.d_model = d_model
-    self.vocab_size = vocab_size
-    self.embedding = nn.Embedding(vocab_size,d_model)
+class InputEmbeddings(nn.Module):
+    def __init__(self,d_model:int,vocab_size:int):
+        self.d_model = d_model
+        self.vocab_size = vocab_size
+        self.embedding = nn.Embedding(vocab_size,d_model)
 
-  def forward(self,x):
-    return self.embedding(x) * math.sqrt(self.d_model)
-
-
+    def forward(self,x):            # !!
+        return self.embedding(x) * math.sqrt(self.d_model)
+        
+        
 class PositionalEncoding(nn.Module):
-  def __init__(self,d_model:int,seq_len:int,dropout:float) -> None:
-    super().__init__()
-    self.d_model = d_model
-    self.seq_len = seq_len
-    self.dropout = nn.Dropout(dropout)
+  def __init__(self,d_model:int,seq_len:int,dropout:float)->None:
+      super().__init__()
+      self.d_model = d_model
+      self.seq_len = seq_len
+      self.dropout = nn.Dropout(dropout)
 
-    positionalencoding = torch.zeros(seq_len,d_model)
-    # vector that represents position of the word inside the sentence
-    position = torch.arange(0,seq_len,dtype=torch.float).unsqueeze(1)
-    # denominator of encoding function
-    denominator = torch.exp(torch.arange(0,d_model,2).float()*(-math.log(10000.0)/d_model))
-    # sin to even positions
-    # all wil have the sine, starting from zero, towards the end and going forward by 2. 
-    positionalencoding[:,0::2] = torch.sin(position * denominator)
-    positionalencoding[:,1::2] = torch.cos(position * denominator)
+      '''
+      matriz de forma seq_len,d_model, siendo seq_len tamaño de la frase\n
+      y d_model tamaño del vector representando a cada palabra.
 
-    positionalencoding = positionalencoding.unsqueeze(0)
+      muchos vectores de longitud 512, el numero\n
+      de vectores es igual a la cantidad de palabras en la frase
+      '''
 
-    #register tensor in the buffer of module, meaning it will be saved on the file, with the model state.
+      matriz = torch.zeros(seq_len,d_model) 
+      # vector representa la posicion de la palabra en la frase.
+      pos = torch.arange(0,seq_len,dtype=torch.float).unsqueeze(1)
+      #!! vector del denominador en positional encoding
+      div_term = torch.exp(torch.arange(0,d_model,2).float()*(-math.log(10000.0)/d_model))
+
+      '''
+      en la matriz que calculamos, a las posiciones pares\n
+      se les saca el seno de su posicion multiplicado por el denominador\n
+      a las posiciones impares se les saca el coseno de su posicion multiplicado por el denominador
+      '''
+      
+      matriz[:,0::2] = torch.sin(pos*div_term)
+      matriz[:,1::2]= torch.cos(pos*div_term)
+
+      matriz = matriz.unsqueeze_(0)
+      # guardar la matriz en el buffer 
+      self.register_buffer('matriz',matriz)
+  def forward(self,x):
+      x = x + (self.pos[:,x.shape[1],:]).requires_grad_(False)
+      return self.dropout(x)
+  
+class LayerNormalization(nn.Module):
+    def __init__(self,eps:float=10**-6)->None:
+        super().__init__()
+        self.eps = eps
+        self.alpha = nn.Parameter(torch.ones(1))
+        self.bias = nn.Parameter(torch.zeros(1))
+
+    def forward(self,x):
+        mean = x.mean(dim=-1,keepdim=True)
+
+
+      
 
  
-    self.register_buffer('pe',positionalencoding)
 
-  def forward(self,x):
 
-    x = x + (self.pe[:,:x.shape[1],:]).requires_grad(False)
-    return self.dropout(x)
+    
+     
+    
