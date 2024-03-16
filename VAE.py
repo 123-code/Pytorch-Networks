@@ -108,21 +108,16 @@ num_epochs = 10
 batch_size = 1
 
 for epoch in range(num_epochs):
-    try:
-
-
-        for _ in range(num_files):
-
-            spectrogram = next(spectrogram_generator)
-            params,opt_state = train_step(params,opt_state,spectrogram )
-    except StopIteration:
-        print("no mas items")
-        break
     
-        
+    spectrogram_generator = ConvertToSpectrogram()  # Reset the generator
+
+    for _ in range(num_files):
+        spectrogram = next(spectrogram_generator)
+        params, opt_state = train_step(params, opt_state, spectrogram)
+
     print(f'Epoch {epoch+1}')
 
-reconstructed_spectrogram = model.apply({'params':params},init_spectrogram) 
+reconstructed_spectrogram = model.apply({'params':params}, init_spectrogram)
 print("Saving model parameters...")
 jnp.save("model_params.npy", params)
 
