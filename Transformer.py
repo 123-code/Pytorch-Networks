@@ -49,6 +49,7 @@ class PositionalEncoding(nn.Module):
       x = x + (self.pos[:,x.shape[1],:]).requires_grad_(False)
       return self.dropout(x)
   
+  #layer normalization 
 class LayerNormalization(nn.Module):
     def __init__(self,eps:float=10**-6)->None:
         super().__init__()
@@ -58,13 +59,33 @@ class LayerNormalization(nn.Module):
 
     def forward(self,x):
         mean = x.mean(dim=-1,keepdim=True)
+        std = x.std(dim=-1,keepdim=True)
+        return self.alpha *(x-mean)/(std+self.eps)+self.bias
+    
+class FeedForwardBlock(nn.Module):
+    def __init__(self,d_model:int,d_ff:int,dropout:float) -> None:
+        super().__init__()
+        self.linear_1 = nn.Linear(d_model,d_ff)
+        self.dropout = nn.Dropout(dropout)
+        self.linear_2 = nn.Linear(d_ff,d_model)
 
-
-      
-
- 
-
+    def forward(self,x):
+        return self.linear_2(self.dropout(torch.relu(self.linear_1(x))))
 
     
      
+class MultiHeadAttentionBlock(nn.Module):
+    def __init__(self, d_model: int, h: int, dropout: float) -> None:
+        super().__init__()
+        self.d_model = d_model
+        self.h = h 
+        assert d_model % h == 0, 'error, not divisible'
+        self.d_k = d_model // h
+        self.W_Q = nn.Linear(d_model, d_model)
+        self.W_K = nn.Linear(d_model, d_model)
+        self.W_V = nn.Linear(d_model, d_model)
+
+        self.w_o = nn.Linear(d_model, d_model)
+        self.dropout = nn.Dropout(dropout)
+
     
