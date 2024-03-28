@@ -7,6 +7,8 @@ import os
 from ConvertToSpectrogram import SpectrogramConverter
 import torch.optim as optim
 import torch.nn.functional as F
+import torchaudio.functional
+
 
 class MelSpectrogramDataset(Dataset):
     def __init__(self, audio_dir, converter, desired_size):
@@ -26,7 +28,7 @@ class MelSpectrogramDataset(Dataset):
 
 desired_size = 128  # or a tuple (128, 128)
 converter = SpectrogramConverter()
-dataset = MelSpectrogramDataset("AudioData", converter, desired_size)
+dataset = MelSpectrogramDataset("../AudioData", converter, desired_size)
 train_loader = DataLoader(dataset, batch_size=8, shuffle=True)
 
 
@@ -98,11 +100,27 @@ def train_model(model, train_loader, criterion, optimizer, num_epochs):
         print(f"Epoch {epoch + 1}, Loss: {loss.item()}")
 
 
-def save_model_params(model, save_folder):
-    torch.save(model.state_dict(), os.path.join(save_folder, "model.pth"))
+def save_model_params(model):
+    torch.save(model.state_dict(),"model.pth")
 
 
 
 
 train_model(model, train_loader, criterion, optimizer, 10)
-save_model_params(model, "model")
+save_model_params(model)
+
+audio_file = '../Audiodata/PERRO NEGRO.wav'
+mel_spectrogram = converter.load_and_convert_to_mel(audio_file)
+mel_spectrogram = F.interpolate(mel_spectrogram.unsqueeze(0), size=(128, 128), mode='bilinear', align_corners=False)
+mel_spectrogram = mel_spectrogram.squeeze(0)
+
+input_data = mel_spectrogram.unsqueeze(0)
+
+with torch.no_grad():
+    output = model(input_data)
+
+waveform = torchaudio.functional.istft(output.squeeze(0),n_fft=converter.n_fft,hop_length=converter.hop_length,win_length=converter.win_length,window=converter.window)
+
+
+# Save the generated audio
+torchaudio.save('generated_audio.wav', waveform, sample_rate=converter.sample_rate)
